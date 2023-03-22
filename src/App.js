@@ -6,14 +6,14 @@ function App() {
   const inputMessageRef = useRef(null)
   const [messages, setMessages] = useState([])
   const configuration = new Configuration({
-    apiKey: "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",
+    apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
 
   const generateText = async () => {
     const response = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: 'Eres un vendedor, contesta como tal: \n\n###\n\n' + messages[messages.length - 1].content + '\n\n###\n\n',
+      prompt: 'Eres un vendedor, contesta: \n\n###\n\n' + messages[messages.length - 1].content + '\n\n###\n\n',
       max_tokens: 150,
       temperature: 0.4
     });
@@ -22,15 +22,23 @@ function App() {
   };
 
   const onSubmit = (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setMessages([...messages, {
       role: "user",
       content: inputMessageRef.current.value
     }])
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      onSubmit()
+    }
+  };
+
   useEffect(() => {
     if (messages.length && inputMessageRef.current?.value) {
+      inputMessageRef.current.value = ""
       generateText()
     }
   }, [inputMessageRef.current?.value])
@@ -61,8 +69,8 @@ function App() {
         <form onSubmit={onSubmit}>
           <div className="chat-textarea-wrapper">
             <div className="chat-textarea-container">
-              <textarea ref={inputMessageRef} id="message" className="chat-textarea" placeholder="Ingrese una consulta..."></textarea>
-              <button type="submit" style={{ border: 'none' }} className="absolute p-1 rounded-md text-gray-500 bottom-1.5 right-1 md:bottom-2.5 md:right-2 hover:bg-gray-100 dark:hover:text-gray-400 dark:hover:bg-gray-900 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"><svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" class="h-4 w-4 mr-1" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+              <textarea ref={inputMessageRef} id="message" onKeyDown={handleKeyDown} className="chat-textarea" placeholder="Ingrese una consulta..."></textarea>
+              <button type="submit" style={{ border: 'none' }} className="absolute p-1 rounded-md text-gray-500 bottom-1.5 right-1 md:bottom-2.5 md:right-2 hover:bg-gray-100 dark:hover:text-gray-400 dark:hover:bg-gray-900 disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"><svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
             </div>
           </div>
         </form>
